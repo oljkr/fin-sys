@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.wishtarot.finsys.payment.mapper.PaymentReceiptMapper">
+    <!-- 자동 생성된 키를 반환하기 위한 설정 추가 -->
+    <insert id="insertPaymentReceipt" parameterType="PaymentReceipt" useGeneratedKeys="true" keyProperty="receiptId">
+        INSERT INTO payment_receipts (transaction_id, receipt_data, verification_status)
+        VALUES (#{transactionId}, #{receiptData}, #{verificationStatus})
+    </insert>
+
+    <select id="selectPaymentReceiptByReceiptData" parameterType="string" resultType="PaymentReceipt">
+        SELECT * FROM payment_receipts WHERE receipt_data = #{receiptData}
+    </select>
+
+    <update id="updateVerificationStatus">
+        UPDATE payment_receipts SET verification_status = #{verificationStatus} WHERE receipt_id = #{receiptId}
+    </update>
+</mapper>

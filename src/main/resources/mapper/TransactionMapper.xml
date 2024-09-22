@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.wishtarot.finsys.payment.mapper.TransactionMapper">
+    <insert id="insertTransaction" parameterType="Transaction" useGeneratedKeys="true" keyProperty="transactionId">
+        INSERT INTO transactions (user_id, payment_method, amount, transaction_date, status)
+        VALUES (#{userId}, #{paymentMethod}, #{amount}, #{transactionDate}, #{status})
+    </insert>
+
+    <select id="selectTransactionById" parameterType="long" resultType="Transaction">
+        SELECT * FROM transactions WHERE transaction_id = #{transactionId}
+    </select>
+
+    <update id="updateTransactionStatus">
+        UPDATE transactions SET status = #{status} WHERE transaction_id = #{transactionId}
+    </update>
+</mapper>
