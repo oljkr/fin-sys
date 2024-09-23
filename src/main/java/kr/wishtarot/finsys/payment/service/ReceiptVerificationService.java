@@ -6,6 +6,14 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.androidpublisher.AndroidPublisher;
 import com.google.api.services.androidpublisher.model.ProductPurchase;
 import com.google.auth.oauth2.GoogleCredentials;
+import kr.wishtarot.finsys.accounting.mapper.AccountingEntriesMapper;
+import kr.wishtarot.finsys.accounting.model.AccountingEntry;
+import kr.wishtarot.finsys.audit.mapper.AuditLogsMapper;
+import kr.wishtarot.finsys.audit.model.AuditLog;
+import kr.wishtarot.finsys.billing.mapper.CookieTransactionsMapper;
+import kr.wishtarot.finsys.billing.mapper.UserCookiesMapper;
+import kr.wishtarot.finsys.billing.model.CookieTransaction;
+import kr.wishtarot.finsys.billing.model.UserCookie;
 import kr.wishtarot.finsys.payment.model.PaymentReceipt;
 import kr.wishtarot.finsys.payment.model.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,20 +41,20 @@ public class ReceiptVerificationService {
     @Autowired
     private PaymentReceiptMapper paymentReceiptMapper;
 
-//    @Autowired
-//    private UserCookiesMapper userCookiesMapper;
-//
-//    @Autowired
-//    private CookieTransactionsMapper cookieTransactionsMapper;
-//
-//    @Autowired
-//    private AccountingEntriesMapper accountingEntriesMapper;
-//
-//    @Autowired
-//    private AuditLogsMapper auditLogsMapper;
+    @Autowired
+    private UserCookiesMapper userCookiesMapper;
+
+    @Autowired
+    private CookieTransactionsMapper cookieTransactionsMapper;
+
+    @Autowired
+    private AccountingEntriesMapper accountingEntriesMapper;
+
+    @Autowired
+    private AuditLogsMapper auditLogsMapper;
 
     @Transactional
-    public boolean verifyAndProcessPurchase(String receiptData, String productId, String userId) {
+    public boolean verifyAndProcessPurchase(String receiptData, String productId, String userId, String ipAddress) {
         logger.info("start verifyAndProcessPurchase");
         // 이미 처리된 영수증인지 확인
         PaymentReceipt existingReceipt = paymentReceiptMapper.selectPaymentReceiptByReceiptData(receiptData);
@@ -86,16 +94,16 @@ public class ReceiptVerificationService {
             logger.info("receipt updated");
 
             // 사용자 쿠키 잔액 업데이트
-            //updateUserCookieBalance(userId, amount);
+            updateUserCookieBalance(userId, amount);
 
             // 쿠키 충전 내역 기록
-            //recordCookieTransaction(userId, amount, transaction.getTransactionId());
+            recordCookieTransaction(userId, amount, transaction.getTransactionId());
 
             // 회계 처리
-            //recordAccountingEntries(transaction.getTransactionId(), amount);
+            recordAccountingEntries(transaction.getTransactionId(), amount);
 
             // 감사 로그 기록
-            //recordAuditLog(userId, "쿠키 충전", amount + "원 결제하여 쿠키 " + amount + "개 충전");
+            recordAuditLog(userId, "쿠키 충전", amount + "원 결제하여 쿠키 " + amount + "개 충전", ipAddress);
 
             return true;
         } else {
@@ -158,62 +166,62 @@ public class ReceiptVerificationService {
         return BigDecimal.ZERO;
     }
 
-//    private void updateUserCookieBalance(Long userId, BigDecimal amount) {
-//        UserCookie userCookie = userCookiesMapper.selectUserCookieByUserId(userId);
-//        if (userCookie == null) {
-//            userCookie = new UserCookie();
-//            userCookie.setUserId(userId);
-//            userCookie.setBalance(amount);
-//            userCookie.setLastUpdated(new Timestamp(System.currentTimeMillis()));
-//            userCookiesMapper.insertUserCookie(userCookie);
-//        } else {
-//            userCookie.setBalance(userCookie.getBalance().add(amount));
-//            userCookie.setLastUpdated(new Timestamp(System.currentTimeMillis()));
-//            userCookiesMapper.updateUserCookie(userCookie);
-//        }
-//    }
+    private void updateUserCookieBalance(String userId, BigDecimal amount) {
+        UserCookie userCookie = userCookiesMapper.selectUserCookieByUserId(userId);
+        if (userCookie == null) {
+            userCookie = new UserCookie();
+            userCookie.setUserId(userId);
+            userCookie.setBalance(amount);
+            userCookie.setLastUpdated(new Timestamp(System.currentTimeMillis()));
+            userCookiesMapper.insertUserCookie(userCookie);
+        } else {
+            userCookie.setBalance(userCookie.getBalance().add(amount));
+            userCookie.setLastUpdated(new Timestamp(System.currentTimeMillis()));
+            userCookiesMapper.updateUserCookie(userCookie);
+        }
+    }
 
-//    private void recordCookieTransaction(Long userId, BigDecimal amount, Long transactionId) {
-//        CookieTransaction cookieTransaction = new CookieTransaction();
-//        cookieTransaction.setUserId(userId);
-//        cookieTransaction.setAmount(amount);
-//        cookieTransaction.setTransactionType("쿠키 충전");
-//        cookieTransaction.setTransactionDate(new Timestamp(System.currentTimeMillis()));
-//        cookieTransaction.setServiceId(null); // 쿠키 충전이므로 서비스 ID는 없음
-//        cookieTransactionsMapper.insertCookieTransaction(cookieTransaction);
-//    }
-//
-//    private void recordAccountingEntries(Long transactionId, BigDecimal amount) {
-//        // 차변: 현금 (Cash)
-//        AccountingEntry debitEntry = new AccountingEntry();
-//        debitEntry.setTransactionId(transactionId);
-//        debitEntry.setAccountCode("101");
-//        debitEntry.setAccountName("현금");
-//        debitEntry.setDebit(amount);
-//        debitEntry.setCredit(BigDecimal.ZERO);
-//        debitEntry.setEntryDate(new Timestamp(System.currentTimeMillis()));
-//        debitEntry.setDescription("쿠키 충전 - 현금 수령");
-//        accountingEntriesMapper.insertAccountingEntry(debitEntry);
-//
-//        // 대변: 이연수익 (Deferred Revenue)
-//        AccountingEntry creditEntry = new AccountingEntry();
-//        creditEntry.setTransactionId(transactionId);
-//        creditEntry.setAccountCode("202");
-//        creditEntry.setAccountName("이연수익");
-//        creditEntry.setDebit(BigDecimal.ZERO);
-//        creditEntry.setCredit(amount);
-//        creditEntry.setEntryDate(new Timestamp(System.currentTimeMillis()));
-//        creditEntry.setDescription("쿠키 충전 - 이연수익 발생");
-//        accountingEntriesMapper.insertAccountingEntry(creditEntry);
-//    }
-//
-//    private void recordAuditLog(Long userId, String action, String description) {
-//        AuditLog auditLog = new AuditLog();
-//        auditLog.setUserId(userId);
-//        auditLog.setAction(action);
-//        auditLog.setDescription(description);
-//        auditLog.setIpAddress("사용자 IP"); // 실제 IP 주소로 대체
-//        auditLog.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-//        auditLogsMapper.insertAuditLog(auditLog);
-//    }
+    private void recordCookieTransaction(String userId, BigDecimal amount, Long transactionId) {
+        CookieTransaction cookieTransaction = new CookieTransaction();
+        cookieTransaction.setUserId(userId);
+        cookieTransaction.setAmount(amount);
+        cookieTransaction.setTransactionType("쿠키 충전");
+        cookieTransaction.setTransactionDate(new Timestamp(System.currentTimeMillis()));
+        cookieTransaction.setServiceId(null); // 쿠키 충전이므로 서비스 ID는 없음
+        cookieTransactionsMapper.insertCookieTransaction(cookieTransaction);
+    }
+
+    private void recordAccountingEntries(Long transactionId, BigDecimal amount) {
+        // 차변: 현금 (Cash)
+        AccountingEntry debitEntry = new AccountingEntry();
+        debitEntry.setTransactionId(transactionId);
+        debitEntry.setAccountCode("101");
+        debitEntry.setAccountName("현금");
+        debitEntry.setDebit(amount);
+        debitEntry.setCredit(BigDecimal.ZERO);
+        debitEntry.setEntryDate(new Timestamp(System.currentTimeMillis()));
+        debitEntry.setDescription("쿠키 충전 - 현금 수령");
+        accountingEntriesMapper.insertAccountingEntry(debitEntry);
+
+        // 대변: 이연수익 (Deferred Revenue)
+        AccountingEntry creditEntry = new AccountingEntry();
+        creditEntry.setTransactionId(transactionId);
+        creditEntry.setAccountCode("202");
+        creditEntry.setAccountName("이연수익");
+        creditEntry.setDebit(BigDecimal.ZERO);
+        creditEntry.setCredit(amount);
+        creditEntry.setEntryDate(new Timestamp(System.currentTimeMillis()));
+        creditEntry.setDescription("쿠키 충전 - 이연수익 발생");
+        accountingEntriesMapper.insertAccountingEntry(creditEntry);
+    }
+
+    private void recordAuditLog(String userId, String action, String description, String ipAddress) {
+        AuditLog auditLog = new AuditLog();
+        auditLog.setUserId(userId);
+        auditLog.setAction(action);
+        auditLog.setDescription(description);
+        auditLog.setIpAddress(ipAddress); // 실제 IP 주소로 대체
+        auditLog.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        auditLogsMapper.insertAuditLog(auditLog);
+    }
 }

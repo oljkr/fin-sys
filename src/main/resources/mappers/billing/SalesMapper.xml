@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.wishtarot.finsys.billing.mapper.SalesMapper">
+
+    <insert id="insertSale" parameterType="kr.wishtarot.finsys.billing.model.Sale">
+        INSERT INTO sales (user_id, amount, sale_date, service_id)
+        VALUES (#{userId}, #{amount}, #{saleDate}, #{serviceId})
+    </insert>
+
+    <select id="selectSaleById" parameterType="long" resultType="kr.wishtarot.finsys.billing.model.Sale">
+        SELECT * FROM sales WHERE sale_id = #{saleId}
+    </select>
+
+    <!-- 추가적인 쿼리 매핑 -->
+</mapper>

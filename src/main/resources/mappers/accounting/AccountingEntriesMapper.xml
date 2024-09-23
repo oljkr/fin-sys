@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.wishtarot.finsys.accounting.mapper.AccountingEntriesMapper">
+
+    <insert id="insertAccountingEntry" parameterType="kr.wishtarot.finsys.accounting.model.AccountingEntry">
+        INSERT INTO accounting_entries (transaction_id, account_code, account_name, debit, credit, entry_date, description)
+        VALUES (#{transactionId}, #{accountCode}, #{accountName}, #{debit}, #{credit}, #{entryDate}, #{description})
+    </insert>
+
+</mapper>

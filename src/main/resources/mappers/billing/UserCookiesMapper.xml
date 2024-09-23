@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.wishtarot.finsys.billing.mapper.UserCookiesMapper">
+
+    <select id="selectUserCookieByUserId" parameterType="string" resultType="kr.wishtarot.finsys.billing.model.UserCookie">
+        SELECT * FROM user_cookies WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertUserCookie" parameterType="kr.wishtarot.finsys.billing.model.UserCookie">
+        INSERT INTO user_cookies (user_id, balance, last_updated)
+        VALUES (#{userId}, #{balance}, #{lastUpdated})
+    </insert>
+
+    <update id="updateUserCookie" parameterType="kr.wishtarot.finsys.billing.model.UserCookie">
+        UPDATE user_cookies
+        SET balance = #{balance}, last_updated = #{lastUpdated}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

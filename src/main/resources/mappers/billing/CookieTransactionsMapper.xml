@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.wishtarot.finsys.billing.mapper.CookieTransactionsMapper">
+
+    <insert id="insertCookieTransaction" parameterType="kr.wishtarot.finsys.billing.model.CookieTransaction">
+        INSERT INTO cookie_transactions (user_id, amount, transaction_type, transaction_date, service_id)
+        VALUES (#{userId}, #{amount}, #{transactionType}, #{transactionDate}, #{serviceId})
+    </insert>
+
+</mapper>
