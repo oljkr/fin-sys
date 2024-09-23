@@ -17,6 +17,7 @@ import kr.wishtarot.finsys.billing.model.UserCookie;
 import kr.wishtarot.finsys.payment.model.PaymentReceipt;
 import kr.wishtarot.finsys.payment.model.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import kr.wishtarot.finsys.payment.mapper.*;
@@ -34,6 +35,10 @@ import java.util.Collections;
 @Service
 public class ReceiptVerificationService {
     private static final Logger logger = LoggerFactory.getLogger(ReceiptVerificationService.class);
+
+    // application.properties에서 경로를 가져옴
+    @Value("${keyFilePath}")
+    private String keyFilePath;
 
     @Autowired
     private TransactionMapper transactionMapper;
@@ -118,7 +123,7 @@ public class ReceiptVerificationService {
         logger.info("start verifyReceiptWithGoogle");
         try {
             // 서비스 계정 키 파일 경로 (resources 폴더에 저장된 경우)
-            String keyFilePath = getClass().getClassLoader().getResource("service-account-key.json").getPath();
+//            String keyFilePath = getClass().getClassLoader().getResource("service-account-key.json").getPath();
             logger.info("keyFilePath: " + keyFilePath);
             // 인증 설정
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(keyFilePath))
