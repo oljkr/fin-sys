@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 public class AccountingEntry {
     private Long entryId;
     private Long transactionId;
+    private Long cookieTransactionId;
     private String accountCode;
     private String accountName;
     private BigDecimal debit;

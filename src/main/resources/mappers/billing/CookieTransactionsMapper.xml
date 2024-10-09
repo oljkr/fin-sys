@@ -5,9 +5,17 @@
 
 <mapper namespace="kr.wishtarot.finsys.billing.mapper.CookieTransactionsMapper">
 
-    <insert id="insertCookieTransaction" parameterType="kr.wishtarot.finsys.billing.model.CookieTransaction">
+    <insert id="insertCookieTransaction" parameterType="kr.wishtarot.finsys.billing.model.CookieTransaction" useGeneratedKeys="true" keyProperty="transactionId">
         INSERT INTO cookie_transactions (user_id, amount, transaction_type, transaction_date, service_id)
         VALUES (#{userId}, #{amount}, #{transactionType}, #{transactionDate}, #{serviceId})
     </insert>
 
+    <!-- 특정 사용자에 대한 쿠키 충전 내역 조회 -->
+    <select id="selectTransactionsByUserIdAndType" parameterType="map" resultType="kr.wishtarot.finsys.billing.model.CookieTransaction">
+        SELECT *
+        FROM cookie_transactions
+        WHERE user_id = #{userId}
+        AND transaction_type = #{transactionType}
+        ORDER BY transaction_date DESC
+    </select>
 </mapper>

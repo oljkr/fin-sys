@@ -41,30 +41,30 @@ public class CookieService {
     @Transactional
     public void useCookies(String userId, BigDecimal amount, Long serviceId, String ipAddress) {
         logger.info("Using cookies for user " + userId + " with amount " + amount + " for service ID " + serviceId);
-        // 사용자 쿠키 잔액 확인
+
+        // 1. 사용자 쿠키 잔액 확인 및 차감
         UserCookie userCookie = userCookiesMapper.selectUserCookieByUserId(userId);
         if (userCookie == null || userCookie.getBalance().compareTo(amount) < 0) {
             throw new RuntimeException("Insufficient cookie balance");
         }
-        logger.info("User " + userId + " has enough cookies to use");
-
-        // 쿠키 잔액 차감
         userCookie.setBalance(userCookie.getBalance().subtract(amount));
         userCookie.setLastUpdated(new Timestamp(System.currentTimeMillis()));
         userCookiesMapper.updateUserCookie(userCookie);
         logger.info("User " + userId + " has used " + amount + " cookies");
 
-        // 쿠키 사용 내역 기록
+        // 2. 쿠키 사용 내역 기록
         CookieTransaction cookieTransaction = new CookieTransaction();
         cookieTransaction.setUserId(userId);
         cookieTransaction.setAmount(amount);
-        cookieTransaction.setTransactionType("use");
+        cookieTransaction.setTransactionType("use"); // ENUM 값에 맞게 설정
         cookieTransaction.setTransactionDate(new Timestamp(System.currentTimeMillis()));
         cookieTransaction.setServiceId(serviceId);
         cookieTransactionsMapper.insertCookieTransaction(cookieTransaction);
         logger.info("Cookie transaction record created for user " + userId);
 
-        // 매출 기록
+        logger.info("Generated transactionId: " + cookieTransaction.getTransactionId());
+
+        // 3. 매출 기록
         Sale sale = new Sale();
         sale.setUserId(userId);
         sale.setAmount(amount);
@@ -73,19 +73,19 @@ public class CookieService {
         salesMapper.insertSale(sale);
         logger.info("Sale record created for user " + userId);
 
-        // 회계 처리
+        // 4. 회계 처리
         recordAccountingEntries(cookieTransaction.getTransactionId(), amount);
         logger.info("Accounting entries recorded for user " + userId);
 
-        // 감사 로그 기록
+        // 5. 감사 로그 기록
         recordAuditLog(userId, "쿠키 사용", "서비스 ID " + serviceId + "를 위해 쿠키 " + amount + "개 사용", ipAddress);
         logger.info("Audit log recorded for user " + userId);
     }
 
     private void recordAccountingEntries(Long transactionId, BigDecimal amount) {
-        // 차변: 이연수익 감소
+        // 차변 기록 (이연수익 감소)
         AccountingEntry debitEntry = new AccountingEntry();
-        debitEntry.setTransactionId(transactionId);
+        debitEntry.setCookieTransactionId(transactionId);
         debitEntry.setAccountCode("202");
         debitEntry.setAccountName("이연수익");
         debitEntry.setDebit(amount);
@@ -94,9 +94,9 @@ public class CookieService {
         debitEntry.setDescription("쿠키 사용 - 이연수익 감소");
         accountingEntriesMapper.insertAccountingEntry(debitEntry);
 
-        // 대변: 매출 증가
+        // 대변 기록 (매출 증가)
         AccountingEntry creditEntry = new AccountingEntry();
-        creditEntry.setTransactionId(transactionId);
+        creditEntry.setCookieTransactionId(transactionId);
         creditEntry.setAccountCode("401");
         creditEntry.setAccountName("매출");
         creditEntry.setDebit(BigDecimal.ZERO);
@@ -111,7 +111,7 @@ public class CookieService {
         auditLog.setUserId(userId);
         auditLog.setAction(action);
         auditLog.setDescription(description);
-        auditLog.setIpAddress(ipAddress); // 실제 IP 주소로 대체
+        auditLog.setIpAddress(ipAddress);
         auditLog.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         auditLogsMapper.insertAuditLog(auditLog);
     }
