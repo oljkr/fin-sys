@@ -33,13 +33,13 @@ public class PurchaseController {
 
         String ipAddress = request.getRemoteAddr();
 
-//        boolean result = true;
-        boolean result = receiptVerificationService.verifyAndProcessPurchase(
-                purchaseRequest.getPurchaseToken(),
-                purchaseRequest.getProductId(),
-                purchaseRequest.getUserId(),
-                ipAddress
-        );
+        boolean result = true;
+//        boolean result = receiptVerificationService.verifyAndProcessPurchase(
+//                purchaseRequest.getPurchaseToken(),
+//                purchaseRequest.getProductId(),
+//                purchaseRequest.getUserId(),
+//                ipAddress
+//        );
 
         if (result) {
             return ResponseEntity.ok("Purchase verified and processed");

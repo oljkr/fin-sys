@@ -163,10 +163,12 @@ public class ReceiptVerificationService {
     private BigDecimal getAmountByProductId(String productId) {
         // 상품 ID에 따라 금액 반환
         // 실제 상품 가격에 맞게 설정
-        if (productId.equals("inapptest0923")) {
+        if (productId.equals("samplecookie200")) {
+            return BigDecimal.valueOf(200);
+        } else if (productId.equals("samplecookie500")) {
+            return BigDecimal.valueOf(500);
+        } else if (productId.equals("samplecookie1000")) {
             return BigDecimal.valueOf(1000);
-        } else if (productId.equals("kr.wishtarot.cookie_5000")) {
-            return BigDecimal.valueOf(5000);
         }
         return BigDecimal.ZERO;
     }
@@ -190,7 +192,7 @@ public class ReceiptVerificationService {
         CookieTransaction cookieTransaction = new CookieTransaction();
         cookieTransaction.setUserId(userId);
         cookieTransaction.setAmount(amount);
-        cookieTransaction.setTransactionType("쿠키 충전");
+        cookieTransaction.setTransactionType("charge");
         cookieTransaction.setTransactionDate(new Timestamp(System.currentTimeMillis()));
         cookieTransaction.setServiceId(null); // 쿠키 충전이므로 서비스 ID는 없음
         cookieTransactionsMapper.insertCookieTransaction(cookieTransaction);

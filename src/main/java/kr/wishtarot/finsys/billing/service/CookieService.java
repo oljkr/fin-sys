@@ -58,7 +58,7 @@ public class CookieService {
         CookieTransaction cookieTransaction = new CookieTransaction();
         cookieTransaction.setUserId(userId);
         cookieTransaction.setAmount(amount);
-        cookieTransaction.setTransactionType("쿠키 사용");
+        cookieTransaction.setTransactionType("use");
         cookieTransaction.setTransactionDate(new Timestamp(System.currentTimeMillis()));
         cookieTransaction.setServiceId(serviceId);
         cookieTransactionsMapper.insertCookieTransaction(cookieTransaction);
