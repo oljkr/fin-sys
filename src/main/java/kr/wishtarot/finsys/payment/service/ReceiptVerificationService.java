@@ -139,7 +139,7 @@ public class ReceiptVerificationService {
 
             // 영수증 검증 요청
             AndroidPublisher.Purchases.Products.Get request = publisher.purchases().products().get(
-                    "kr.wishtarot.tarotapp", // 앱의 패키지 이름
+                    "com.whisperofstar.tarotapp", // 앱의 패키지 이름
                     productId,
                     purchaseToken
             );
